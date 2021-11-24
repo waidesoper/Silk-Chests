@@ -1,2 +1,3 @@
-# Silk-Chests
-silk touch chests/barrels
+# Silk Chests
+
+"Silking the un-silkable !"

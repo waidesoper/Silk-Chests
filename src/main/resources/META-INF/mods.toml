@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[${loader_version},)"
+license="GPLv3"
+issueTrackerURL="https://github.com/CrimsonFluff/Silk-Spawners/issues" #optional
+
+[[mods]]
+modId="silkchests"
+version="${version}"
+displayName="Silk Chests"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/crimson-silk-spawners"
+updateJSONURL="https://github.com/CrimsonFluff/Silk-Spawners/raw/1.16.5/update.json"
+authors="§4Crimson_Fluff"
+logoFile="logo.png"
+credits=""
+description=''' "Silking the un-silkable" '''
+
+[[dependencies.silkchests]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[${mc_version}]"
+  side="BOTH"
+[[dependencies.silkchests]]
+    modId="forge"
+    mandatory=true
+    versionRange="[${forge_version},)"
+    side="BOTH"
