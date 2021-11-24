@@ -1,6 +1,7 @@
 package crimsonfluff.silkchests;
 
 import io.netty.buffer.Unpooled;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.ChestBlock;
@@ -12,7 +13,10 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.BarrelTileEntity;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -25,6 +29,7 @@ import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -49,26 +54,23 @@ public class SilkChests {
 
         Block block = event.getState().getBlock();
         TileEntity tileEntity = world.getBlockEntity(event.getPos());
-        CompoundNBT spawnerDataNBT;
-
-        if (block instanceof ChestBlock && tileEntity instanceof ChestTileEntity)
-            spawnerDataNBT = ((ChestTileEntity) tileEntity).save(new CompoundNBT());
-
-        else if (block instanceof BarrelBlock && tileEntity instanceof BarrelTileEntity)
-            spawnerDataNBT = ((BarrelTileEntity) tileEntity).save(new CompoundNBT());
-
-        else
-            return;
+        if (tileEntity == null) return;
 
         int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, player.getMainHandItem());
         if (lvl != 0) {
             ItemStack itemStack = new ItemStack(block);
 
-            spawnerDataNBT.remove("x");
-            spawnerDataNBT.remove("y");
-            spawnerDataNBT.remove("z");
+            CompoundNBT nbtTileEntity = tileEntity.save(new CompoundNBT());
+            nbtTileEntity.remove("x");
+            nbtTileEntity.remove("y");
+            nbtTileEntity.remove("z");
 
-            itemStack.setTag(spawnerDataNBT);
+            CompoundNBT nbtState = NBTUtil.writeBlockState(event.getState());
+            nbtState.getCompound("Properties").remove("facing");
+            nbtTileEntity.put("BlockState", nbtState);
+//            player.displayClientMessage(new StringTextComponent("NBTSTATE: " + nbtState), false);
+
+            itemStack.setTag(nbtTileEntity);
 
             Block.popResource(world, event.getPos(), itemStack);
             world.removeBlockEntity(event.getPos());
@@ -89,23 +91,18 @@ public class SilkChests {
             if (! itemStack.hasTag()) return;
 
             TileEntity tileEntity = event.getWorld().getBlockEntity(event.getPos());
-            CompoundNBT spawnerDataNBT;
+            if (tileEntity == null) return;
 
-            if (itemStack.getItem() == Items.CHEST || itemStack.getItem() == Items.TRAPPED_CHEST || itemStack.getItem() == Items.BARREL) {
-                spawnerDataNBT = itemStack.getTag();
+            CompoundNBT nbtTileEntity = itemStack.getTag();
+            nbtTileEntity.putInt("x", event.getPos().getX());
+            nbtTileEntity.putInt("y", event.getPos().getY());
+            nbtTileEntity.putInt("z", event.getPos().getZ());
 
-                spawnerDataNBT.putInt("x", event.getPos().getX());
-                spawnerDataNBT.putInt("y", event.getPos().getY());
-                spawnerDataNBT.putInt("z", event.getPos().getZ());
+//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.toString()), false);
+//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.getCompound("BlockState").toString()), false);
 
-                // Note: Keep the redundant cast !
-                if (tileEntity instanceof ChestTileEntity)
-                    ((ChestTileEntity) tileEntity).load(event.getState(), spawnerDataNBT);
-
-                else if (tileEntity instanceof BarrelTileEntity)
-                    ((BarrelTileEntity) tileEntity).load(event.getState(), spawnerDataNBT);
-
-            }
+            tileEntity.load(event.getState(), nbtTileEntity);
+            event.getWorld().setBlock(event.getPos(), NBTUtil.readBlockState(nbtTileEntity.getCompound("BlockState")), Constants.BlockFlags.DEFAULT_AND_RERENDER);
         }
     }
 
@@ -117,43 +114,36 @@ public class SilkChests {
         ItemStack itemStack = event.getItemStack();
         if (! itemStack.hasTag()) return;
 
-        if (itemStack.getItem() == Items.CHEST || itemStack.getItem() == Items.TRAPPED_CHEST || itemStack.getItem() == Items.BARREL) {
-            int nbtLength = getNBTSize(itemStack.getTag());
-            int overflow = NBT_MAXIMUM - nbtLength;
-            String extra = "";
+        int nbtLength = getNBTSize(itemStack.getTag());
+        int overflow = NBT_MAXIMUM - nbtLength;
+        String extra = "";
 
-            // https://www.reddit.com/r/technicalminecraft/comments/anjusp/nbt_data_too_big/
-            if (overflow != 0) extra = " (" + overflow + ")";
-            if (Screen.hasShiftDown())
-                event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
-            else
-                event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+        // https://www.reddit.com/r/technicalminecraft/comments/anjusp/nbt_data_too_big/
+        if (overflow != 0) extra = " (" + overflow + ")";
+        if (Screen.hasShiftDown())
+            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+        else
+            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
 
-            // from ShulkerBoxBlock.appendHoverText
-            if (itemStack.getTag().contains("LootTable", 8))
-                event.getToolTip().add(new StringTextComponent("???????"));
+        // from ShulkerBoxBlock.appendHoverText
+        if (itemStack.getTag().contains("LootTable", 8))
+            event.getToolTip().add(new StringTextComponent("???????"));
 
-            if (itemStack.getTag().contains("Items", 9)) {
-                NonNullList<ItemStack> nonNullList = NonNullList.withSize(27, ItemStack.EMPTY);
-                ItemStackHelper.loadAllItems(itemStack.getTag(), nonNullList);
-                int i = 0;
-                int j = 0;
+        if (itemStack.getTag().contains("Items", 9)) {
+            ListNBT listnbt = itemStack.getTag().getList("Items", 10);
+            int listsize = Integer.min(5, listnbt.size());
 
-                for(ItemStack itemstack : nonNullList) {
-                    if (! itemstack.isEmpty()) {
-                        ++j;
-                        if (i <= 4) {
-                            ++i;
-                            IFormattableTextComponent iFormattableTextComponent = itemstack.getHoverName().copy();
-                            iFormattableTextComponent.append(" x").append(String.valueOf(itemstack.getCount()));
-                            event.getToolTip().add(iFormattableTextComponent);
-                        }
-                    }
-                }
+            for(int i = 0; i < listsize; ++i) {
+                CompoundNBT compoundnbt = listnbt.getCompound(i);
+                ItemStack item = ItemStack.of(compoundnbt);
 
-                if (j - i > 0)
-                    event.getToolTip().add(new TranslationTextComponent("container.shulkerBox.more", j - i).withStyle(TextFormatting.ITALIC));
+                IFormattableTextComponent iFormattableTextComponent = item.getHoverName().copy();
+                iFormattableTextComponent.append(" x").append(String.valueOf(item.getCount()));
+                event.getToolTip().add(iFormattableTextComponent);
             }
+
+            if (listnbt.size() > 5)
+                event.getToolTip().add(new TranslationTextComponent("container.shulkerBox.more", listnbt.size() - 5).withStyle(TextFormatting.ITALIC));
         }
     }
 
