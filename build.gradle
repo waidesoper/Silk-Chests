@@ -12,9 +12,9 @@ apply plugin: 'idea'
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 
-version = minecraft_version + '-' + silkchests_version
-group = 'com.crimsonfluff.silkchests' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'silkchests'
+version = minecraft_version + '-' + silkytouch_version
+group = 'com.crimsonfluff.silkytouch' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'silkytouch'
 
 repositories {
     maven { name = "jei"
@@ -68,7 +68,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                silkchests {
+                silkytouch {
                     source sourceSets.main
                 }
             }
@@ -81,7 +81,7 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
 
             mods {
-                silkchests {
+                silkytouch {
                     source sourceSets.main
                 }
             }
@@ -93,10 +93,10 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'silkchests', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'silkytouch', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                silkchests {
+                silkytouch {
                     source sourceSets.main
                 }
             }
@@ -115,10 +115,10 @@ javadoc {
 
 jar {
     manifest.attributes([
-        "Specification-Title": "Silk Chests",
+        "Specification-Title": "Silky Touch",
         "Specification-Vendor": "Crimson_Fluff",
         "Specification-Version": project.version,
-        "Implementation-Title": "Silk Chests",
+        "Implementation-Title": "Silky Touch",
         "Implementation-Version": project.version,
         "Implementation-Vendor": "Crimson_Fluff",
         "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")

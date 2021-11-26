@@ -1,9 +1,8 @@
-package crimsonfluff.silkchests;
+package crimsonfluff.silkytouch;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -13,17 +12,11 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -36,12 +29,12 @@ import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 
-@Mod(SilkChests.MOD_ID)
-public class SilkChests {
-    public static final String MOD_ID = "silkchests";
+@Mod(SilkyTouch.MOD_ID)
+public class SilkyTouch {
+    public static final String MOD_ID = "silkytouch";
     public static final int NBT_MAXIMUM = 1048576;
 
-    public SilkChests() {
+    public SilkyTouch() {
         MinecraftForge.EVENT_BUS.register(this);
     }
 

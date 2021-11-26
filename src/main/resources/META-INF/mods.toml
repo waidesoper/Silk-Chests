@@ -4,9 +4,9 @@ license="GPLv3"
 issueTrackerURL="https://github.com/CrimsonFluff/Silk-Chests/issues"
 
 [[mods]]
-modId="silkchests"
+modId="silkytouch"
 version="1.17.1-1.0.0"
-displayName="Silk Chests"
+displayName="Silky Touch"
 displayURL="http://crimsonfluff.com/"
 updateJSONURL = "https://github.com/CrimsonFluff/Silk-Chests/raw/1.17.1/update.json"
 authors="§4Crimson_Fluff"
