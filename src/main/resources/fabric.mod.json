@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "silkchests",
+  "version": "${version}",
+  "name": "Silkchests",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "GPLv3",
+  "icon": "assets/silkchests/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "crimsonfluff.silkchests.client.SilkchestsClient"
+    ],
+    "main": [
+      "crimsonfluff.silkchests.Silkchests"
+    ]
+  },
+  "mixins": [
+    "silkchests.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.3",
+    "fabric": "*",
+    "minecraft": "1.16.5"
+  }
+}
