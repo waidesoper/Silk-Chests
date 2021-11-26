@@ -1,31 +1,30 @@
 package crimsonfluff.silkchests;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BarrelBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.BarrelTileEntity;
-import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.BarrelBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -48,27 +47,27 @@ public class SilkChests {
 
     @SubscribeEvent     // Server-side only
     public void onBlockBreak(BlockEvent.BreakEvent event) {
-        ServerWorld world = (ServerWorld) event.getWorld();
-        ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+        ServerLevel world = (ServerLevel) event.getWorld();
+        ServerPlayer player = (ServerPlayer) event.getPlayer();
         if (player.isCreative()) return;
 
         Block block = event.getState().getBlock();
-        TileEntity tileEntity = world.getBlockEntity(event.getPos());
+        BlockEntity tileEntity = world.getBlockEntity(event.getPos());
         if (tileEntity == null) return;
 
         int lvl = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, player.getMainHandItem());
         if (lvl != 0) {
             ItemStack itemStack = new ItemStack(block);
 
-            CompoundNBT nbtTileEntity = tileEntity.save(new CompoundNBT());
+            CompoundTag nbtTileEntity = tileEntity.save(new CompoundTag());
             nbtTileEntity.remove("x");
             nbtTileEntity.remove("y");
             nbtTileEntity.remove("z");
 
-            CompoundNBT nbtState = NBTUtil.writeBlockState(event.getState());
+            CompoundTag nbtState = NbtUtils.writeBlockState(event.getState());
             nbtState.getCompound("Properties").remove("facing");
+            nbtState.getCompound("Properties").remove("waterlogged");
             nbtTileEntity.put("BlockState", nbtState);
-//            player.displayClientMessage(new StringTextComponent("NBTSTATE: " + nbtState), false);
 
             itemStack.setTag(nbtTileEntity);
 
@@ -84,25 +83,28 @@ public class SilkChests {
 
     @SubscribeEvent
     public void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
-        if (event.getEntity() instanceof ServerPlayerEntity) {
-            ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
+        if (event.getEntity() instanceof ServerPlayer player) {
             ItemStack itemStack = player.getItemInHand(player.getUsedItemHand());
 
             if (! itemStack.hasTag()) return;
 
-            TileEntity tileEntity = event.getWorld().getBlockEntity(event.getPos());
+            BlockEntity tileEntity = event.getWorld().getBlockEntity(event.getPos());
             if (tileEntity == null) return;
 
-            CompoundNBT nbtTileEntity = itemStack.getTag();
+            CompoundTag nbtTileEntity = itemStack.getTag();
             nbtTileEntity.putInt("x", event.getPos().getX());
             nbtTileEntity.putInt("y", event.getPos().getY());
             nbtTileEntity.putInt("z", event.getPos().getZ());
 
-//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.toString()), false);
-//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.getCompound("BlockState").toString()), false);
+            // NBT Way
+            CompoundTag oldState = NbtUtils.writeBlockState(event.getState());
+            if (oldState.getCompound("Properties").contains("facing")) {
+                nbtTileEntity.getCompound("BlockState").getCompound("Properties").putString("facing", oldState.getCompound("Properties").getString("facing"));
+            }
 
-            tileEntity.load(event.getState(), nbtTileEntity);
-            event.getWorld().setBlock(event.getPos(), NBTUtil.readBlockState(nbtTileEntity.getCompound("BlockState")), Constants.BlockFlags.DEFAULT_AND_RERENDER);
+            BlockState state = NbtUtils.readBlockState(nbtTileEntity.getCompound("BlockState"));
+            tileEntity.load(nbtTileEntity);
+            event.getWorld().setBlock(event.getPos(), state, Constants.BlockFlags.DEFAULT_AND_RERENDER);
         }
     }
 
@@ -121,37 +123,37 @@ public class SilkChests {
         // https://www.reddit.com/r/technicalminecraft/comments/anjusp/nbt_data_too_big/
         if (overflow != 0) extra = " (" + overflow + ")";
         if (Screen.hasShiftDown())
-            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+            event.getToolTip().add(1, new TranslatableComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
         else
-            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+            event.getToolTip().add(1, new TranslatableComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
 
         // from ShulkerBoxBlock.appendHoverText
         if (itemStack.getTag().contains("LootTable", 8))
-            event.getToolTip().add(new StringTextComponent("???????"));
+            event.getToolTip().add(new TextComponent("???????"));
 
         if (itemStack.getTag().contains("Items", 9)) {
-            ListNBT listnbt = itemStack.getTag().getList("Items", 10);
+            ListTag listnbt = itemStack.getTag().getList("Items", 10);
             int listsize = Integer.min(5, listnbt.size());
 
             for(int i = 0; i < listsize; ++i) {
-                CompoundNBT compoundnbt = listnbt.getCompound(i);
+                CompoundTag compoundnbt = listnbt.getCompound(i);
                 ItemStack item = ItemStack.of(compoundnbt);
 
-                IFormattableTextComponent iFormattableTextComponent = item.getHoverName().copy();
-                iFormattableTextComponent.append(" x").append(String.valueOf(item.getCount()));
-                event.getToolTip().add(iFormattableTextComponent);
+                MutableComponent mutableComponent = item.getHoverName().copy();
+                mutableComponent.append(" x").append(String.valueOf(item.getCount()));
+                event.getToolTip().add(mutableComponent);
             }
 
             if (listnbt.size() > 5)
-                event.getToolTip().add(new TranslationTextComponent("container.shulkerBox.more", listnbt.size() - 5).withStyle(TextFormatting.ITALIC));
+                event.getToolTip().add(new TranslatableComponent("container.shulkerBox.more", listnbt.size() - 5).withStyle(ChatFormatting.ITALIC));
         }
     }
 
     // Dank Storage @ DarkHax
     // License: Public Domain
     // saves on the processing that getTag().toString() does
-    private int getNBTSize(@Nullable CompoundNBT nbt) {
-        PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+    private int getNBTSize(@Nullable CompoundTag nbt) {
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         buffer.writeNbt(nbt);
         buffer.release();
         return buffer.writerIndex();

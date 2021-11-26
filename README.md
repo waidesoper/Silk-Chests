@@ -1,3 +1,3 @@
-# Silk Chests
+# Silky Touch
 
 "Silking the un-silkable !"
