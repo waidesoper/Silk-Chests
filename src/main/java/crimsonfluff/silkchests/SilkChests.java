@@ -1,26 +1,17 @@
 package crimsonfluff.silkchests;
 
 import io.netty.buffer.Unpooled;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BarrelBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.ChestBlock;
+import net.minecraft.block.*;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.BarrelTileEntity;
-import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -36,6 +27,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Mod(SilkChests.MOD_ID)
 public class SilkChests {
@@ -67,6 +59,7 @@ public class SilkChests {
 
             CompoundNBT nbtState = NBTUtil.writeBlockState(event.getState());
             nbtState.getCompound("Properties").remove("facing");
+            nbtState.getCompound("Properties").remove("waterlogged");
             nbtTileEntity.put("BlockState", nbtState);
 //            player.displayClientMessage(new StringTextComponent("NBTSTATE: " + nbtState), false);
 
@@ -98,11 +91,28 @@ public class SilkChests {
             nbtTileEntity.putInt("y", event.getPos().getY());
             nbtTileEntity.putInt("z", event.getPos().getZ());
 
-//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.toString()), false);
-//            player.displayClientMessage(new StringTextComponent(spawnerDataNBT.getCompound("BlockState").toString()), false);
+            // better way ??
+//            BlockState state2 = NBTUtil.readBlockState(nbtTileEntity.getCompound("BlockState"));
+//
+//            event.getState().getValues().forEach((property, comparable) -> {
+//                if (property.getName().equals("facing")) {
+//                    Optional<?> optional = property.getValue(property.getName());
+//                    if (optional.isPresent()) {
+//                        state2.setValue(property, optional.get());
+//                        player.displayClientMessage(new StringTextComponent("Found Property: " + optional.get()), false);
+//                    }
+//                }
+//            });
 
-            tileEntity.load(event.getState(), nbtTileEntity);
-            event.getWorld().setBlock(event.getPos(), NBTUtil.readBlockState(nbtTileEntity.getCompound("BlockState")), Constants.BlockFlags.DEFAULT_AND_RERENDER);
+            // NBT Way
+            CompoundNBT oldState = NBTUtil.writeBlockState(event.getState());
+            if (oldState.getCompound("Properties").contains("facing")) {
+                nbtTileEntity.getCompound("BlockState").getCompound("Properties").putString("facing", oldState.getCompound("Properties").getString("facing"));
+            }
+
+            BlockState state = NBTUtil.readBlockState(nbtTileEntity.getCompound("BlockState"));
+            tileEntity.load(state, nbtTileEntity);
+            event.getWorld().setBlock(event.getPos(), state, Constants.BlockFlags.DEFAULT_AND_RERENDER);
         }
     }
 
