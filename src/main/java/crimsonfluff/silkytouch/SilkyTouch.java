@@ -1,4 +1,4 @@
-package crimsonfluff.silkchests;
+package crimsonfluff.silkytouch;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.*;
@@ -27,14 +27,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
-@Mod(SilkChests.MOD_ID)
-public class SilkChests {
-    public static final String MOD_ID = "silkchests";
+@Mod(SilkyTouch.MOD_ID)
+public class SilkyTouch {
+    public static final String MOD_ID = "silkytouch";
     public static final int NBT_MAXIMUM = 1048576;
 
-    public SilkChests() {
+    public SilkyTouch() {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -131,9 +130,9 @@ public class SilkChests {
         // https://www.reddit.com/r/technicalminecraft/comments/anjusp/nbt_data_too_big/
         if (overflow != 0) extra = " (" + overflow + ")";
         if (Screen.hasShiftDown())
-            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+            event.getToolTip().add(1, new TranslationTextComponent("tip.silkytouch.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
         else
-            event.getToolTip().add(1, new TranslationTextComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
+            event.getToolTip().add(1, new TranslationTextComponent("tip.silkytouch.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? TextFormatting.GREEN : TextFormatting.RED));
 
         // from ShulkerBoxBlock.appendHoverText
         if (itemStack.getTag().contains("LootTable", 8))

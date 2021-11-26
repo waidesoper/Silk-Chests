@@ -4,22 +4,22 @@ license="GPLv3"
 issueTrackerURL="https://github.com/CrimsonFluff/Silk-Spawners/issues" #optional
 
 [[mods]]
-modId="silkchests"
+modId="silkytouch"
 version="${version}"
-displayName="Silk Chests"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/crimson-silk-spawners"
-updateJSONURL="https://github.com/CrimsonFluff/Silk-Spawners/raw/1.16.5/update.json"
+displayName="Silky Touch"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/crimson-silky-touch"
+updateJSONURL="https://github.com/CrimsonFluff/Silk-Chests/raw/1.16.5/update.json"
 authors="§4Crimson_Fluff"
 logoFile="logo.png"
 credits=""
 description=''' "Silking the un-silkable" '''
 
-[[dependencies.silkchests]]
+[[dependencies.silkytouch]]
     modId="minecraft"
     mandatory=true
     versionRange="[${mc_version}]"
   side="BOTH"
-[[dependencies.silkchests]]
+[[dependencies.silkytouch]]
     modId="forge"
     mandatory=true
     versionRange="[${forge_version},)"
