@@ -116,9 +116,9 @@ public class SilkyTouch {
         // https://www.reddit.com/r/technicalminecraft/comments/anjusp/nbt_data_too_big/
         if (overflow != 0) extra = " (" + overflow + ")";
         if (Screen.hasShiftDown())
-            event.getToolTip().add(1, new TranslatableComponent("tip.silkchests.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
+            event.getToolTip().add(1, new TranslatableComponent("tip.silkytouch.nbt", nbtLength + " / " + NBT_MAXIMUM + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
         else
-            event.getToolTip().add(1, new TranslatableComponent("tip.silkchests.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
+            event.getToolTip().add(1, new TranslatableComponent("tip.silkytouch.nbt", nbtLength + extra).withStyle(nbtLength <= NBT_MAXIMUM ? ChatFormatting.GREEN : ChatFormatting.RED));
 
         // from ShulkerBoxBlock.appendHoverText
         if (itemStack.getTag().contains("LootTable", 8))
