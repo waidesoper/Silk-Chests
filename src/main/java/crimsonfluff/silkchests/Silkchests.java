@@ -47,7 +47,7 @@ public class Silkchests implements ModInitializer {
                 world.removeBlockEntity(pos);
                 world.removeBlock(pos,false);
 
-                player.getMainHandStack().damage(1, player, plyr -> player.sendEquipmentBreakStatus(player.getActiveHand() == Hand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND));
+                player.getMainHandStack().damage(1, player, plyr -> player.sendToolBreakStatus(player.getActiveHand()));
 
                 return ActionResult.FAIL;
             }
