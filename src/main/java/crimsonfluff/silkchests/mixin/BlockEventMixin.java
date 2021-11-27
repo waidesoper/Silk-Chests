@@ -1,6 +1,7 @@
 package crimsonfluff.silkchests.mixin;
 
 import crimsonfluff.silkchests.event.BlockBreakEvent;
+import crimsonfluff.silkchests.event.BlockPlaceEvent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
@@ -27,6 +28,9 @@ public class BlockEventMixin {
 
     @Inject(method = "onPlaced", at = @At("TAIL"))
     public void onBlockPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack, CallbackInfo ci){
-
+        ActionResult result = BlockPlaceEvent.EVENT.invoker().blockPlaced(world, pos, state, placer, itemStack);
+        if (result == ActionResult.FAIL){
+            ci.cancel();
+        }
     }
 }
