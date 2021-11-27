@@ -5,6 +5,7 @@ import crimsonfluff.silkchests.event.BlockPlaceEvent;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -74,7 +75,7 @@ public class Silkchests implements ModInitializer {
 
                 BlockState newState = NbtHelper.toBlockState(nbtTileEntity.getCompound("BlockState"));
                 tileEntity.fromTag(newState, nbtTileEntity);
-                world.setBlockState(pos, newState, 11);
+                //world.setBlockState(pos, newState, 11);
             }
             return ActionResult.PASS;
         });

@@ -4,6 +4,7 @@ import crimsonfluff.silkchests.event.BlockBreakEvent;
 import crimsonfluff.silkchests.event.BlockPlaceEvent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -21,14 +22,6 @@ public class BlockEventMixin {
     @Inject(method = "onBreak", at = @At("HEAD"), cancellable = true)
     public void onBlockBreak(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci){
         ActionResult result = BlockBreakEvent.EVENT.invoker().blockBroken(world, pos, state, player);
-        if (result == ActionResult.FAIL){
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "onPlaced", at = @At("TAIL"))
-    public void onBlockPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack itemStack, CallbackInfo ci){
-        ActionResult result = BlockPlaceEvent.EVENT.invoker().blockPlaced(world, pos, state, placer, itemStack);
         if (result == ActionResult.FAIL){
             ci.cancel();
         }
